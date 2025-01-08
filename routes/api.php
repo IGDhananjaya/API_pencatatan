@@ -20,3 +20,5 @@ Route::get('/transactions/saldo/{nim}', [TransactionController::class, 'getSaldo
 Route::put('/transactions/saldo/{nim}', [TransactionController::class, 'updateSaldoByNim']);
 //Route untuk Delete
 Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
+//Route untuk Chart
+Route::get('/transactions/chart/{nim}', [TransactionController::class, 'getTransactionDataForChart']);

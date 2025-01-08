@@ -168,4 +168,38 @@ class TransactionController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat menghapus transaksi.', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function getTransactionDataForChart(Request $request, $nim): JsonResponse
+    {
+        $transactions = Transaction::where('nim', $nim)
+            ->orderBy('date')
+            ->get();
+
+        if ($transactions->isEmpty()) {
+            return response()->json(['message' => 'Tidak ada transaksi dengan NIM ini'], 404);
+        }
+
+        $data = [];
+        $saldo = 0;
+        foreach ($transactions as $transaction) {
+            if ($transaction->type === 'income') {
+                $saldo += $transaction->amount;
+            } elseif ($transaction->type === 'expense') {
+                $saldo -= $transaction->amount;
+            } else {
+                Log::warning("Tipe transaksi tidak valid: {$transaction->type} untuk transaksi ID: {$transaction->id}");
+                continue; // Lewati transaksi yang tidak valid
+            }
+
+            $data[] = [
+                'date' => $transaction->date->format('Y-m-d'), // Format tanggal penting!
+                'saldo' => $saldo,
+                'type' => $transaction->type,
+                'amount' => $transaction->amount,
+                'description' => $transaction->description,
+            ];
+        }
+
+        return response()->json($data);
+    }
 }
